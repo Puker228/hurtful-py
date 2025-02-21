@@ -1,10 +1,29 @@
-class Microphone:
+__author__ = 'Dyachenko Danil (Puker228)'
+__version__ = '0.0.1'
+__license__ = 'MIT'
+
+class AudioSource(object):
+    def __init__(self):
+        raise NotImplementedError("this is abstract class")
+
+    def __enter__(self):
+        raise NotImplementedError("this is abstract class")
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        raise NotImplementedError("this is abstract class")
+
+class Microphone(AudioSource):
     def __init__(self, chunk_size=1024, sample_rate=None, microphone_index=None):
+        """
+        :param chunk_size: audio block size
+        :param sample_rate: sampling rate
+        :param microphone_index: device index
+        """
         assert microphone_index is None or isinstance(microphone_index, int), 'Microphone index must be None or positive integer.'
         assert sample_rate is None or (isinstance(sample_rate, int) and sample_rate > 0), 'Sample rate must be None or positive integer.'
         assert isinstance(chunk_size, int) and chunk_size > 0, 'Chunk size must be positive integer.'
 
-        self.pyaudio_modules = self.get_pyaudio()
+        self.pyaudio_modules = self.get_pyaudio_lib()
         audio = self.pyaudio_modules.PyAudio()
 
         # setup pyaudio
@@ -22,9 +41,32 @@ class Microphone:
         self.format = self.pyaudio_modules.paInt16
         self.sample_rate = sample_rate
         self.microphone_index = microphone_index
+        self.stream = None
+
+    def __enter__(self):
+        self.audio = self.pyaudio_modules.PyAudio()
+        try:
+            self.stream = self.audio.open(
+                format=self.format,
+                channels=1,
+                rate=self.sample_rate,
+                input=True
+            )
+        except Exception:
+            self.audio.terminate()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.stream.stop_stream()
+            self.stream.close()
+        finally:
+            self.stream = None
+            self.audio.terminate()
+
 
     @staticmethod
-    def get_pyaudio():
+    def get_pyaudio_lib():
         try:
             import pyaudio
         except ImportError:
