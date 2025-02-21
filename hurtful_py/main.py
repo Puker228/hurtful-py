@@ -1,5 +1,6 @@
-import pyaudio
 import wave
+
+import pyaudio
 
 
 class MicrophoneReader:
