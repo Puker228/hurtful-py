@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='hurtful-py',
-    version='0.0.1',
+    version='0.0.2',
     author='Danil Dyachenko (Puker228)',
     author_email='karatelanalov@yandex.ru',
     description='HurtFul Python SDK',
